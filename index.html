@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Viewer</title>
+    <style>
+        #logContainer {
+            font-family: monospace;
+            padding: 3vw;
+            white-space: pre-wrap;
+            height: 80vh;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            background-color: black;
+        }
+
+        #logContainer span {
+            display: block;
+        }
+
+        #logContainer span.debug {
+            color: yellow;
+        }
+
+        #logContainer span.info {
+            color: green;
+        }
+
+        #logContainer span.error {
+            color: red;
+        }
+
+        @media (min-width: 320px) {
+            #logContainer {
+                font-size: 12px;
+            }
+        }
+
+        @media (min-width: 480px) {
+            #logContainer {
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 640px) {
+            #logContainer {
+                font-size: 16px;
+            }
+        }
+
+        @media (min-width: 800px) {
+            #logContainer {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #logContainer {
+                font-size: 20px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            #logContainer {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Log Viewer</h1>
+    <div id="logContainer"></div>
+    <script>
+        const logContainer = document.getElementById('logContainer');
+        const port = 8080;
+        const websocket = new WebSocket(`ws://localhost:${port}/ws/log`);
+
+        websocket.onmessage = function(event) {
+            const logLine = event.data;
+            const logType = logLine.match(/\[(DEBUG|INFO|ERROR)\]/)[1];
+            const logColor = {
+                DEBUG: 'yellow',
+                INFO: 'green',
+                ERROR: 'red',
+            }[logType];
+            const logSpan = document.createElement('span');
+            logSpan.className = logType.toLowerCase();
+            logSpan.textContent = logLine;
+            logContainer.appendChild(logSpan);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
+
+        websocket.onerror = function(event) {
+            console.error("WebSocket error: ", event);
+        };
+    </script>
+</body>
+</html>
+
