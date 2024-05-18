@@ -42,3 +42,5 @@ Command Line Arguments
     -endpoint: WebSocket endpoint (default: /ws/log)
     -address: Address to run the server on (default: 0.0.0.0)
     -port: Port to run the server on (default: 8080)
+
+To display logs in the browser, you can use the template page from this repository.
