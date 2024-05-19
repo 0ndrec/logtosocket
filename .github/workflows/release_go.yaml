@@ -29,23 +29,11 @@ jobs:
       with:
         name: myapp
         path: app/bin/myapp
-  upload:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v2
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: myapp
-        path: .
-    - name: Upload binary to GitHub Releases
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: app/bin/myapp
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: v1.0.${{ github.run_number }}
-    - name: Display download URL
-      run: 'echo "Binary download link: https://github.com/${{ github.repository }}/releases/download/${{github.event.release.tag_name }}/myapp"'
+        path: app/bin/myapp
 name: Go release
 'on':
   pull_request:
