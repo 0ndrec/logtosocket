@@ -43,6 +43,7 @@ jobs:
       with:
         artifacts: app/bin/myapp
         token: ${{ secrets.GITHUB_TOKEN }}
+        tag: v1.0.${{ github.run_number }}
     - name: Display download URL
       run: 'echo "Binary download link: https://github.com/${{ github.repository }}/releases/download/${{github.event.release.tag_name }}/myapp"'
 name: Go release
