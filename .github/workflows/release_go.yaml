@@ -19,11 +19,10 @@ jobs:
     - name: Cache Go modules
       uses: actions/cache@v2
       with:
+        path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        path:
-        - ~/go/pkg/mod
-        - ~/.cache/go-build
-        restore-keys: ${{ runner.os }}-go-
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Download libs
       run: go get -u github.com/fsnotify/fsnotify && go get -u github.com/gorilla/websocket
     - name: Add libs
