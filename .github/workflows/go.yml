@@ -20,6 +20,12 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.21.5'
+        
+    - name: Download libs
+      run: go get -u github.com/fsnotify/fsnotify && go get -u github.com/gorilla/websocket
+      
+    - name: Add libs
+      run: go get app/app
 
     - name: Build
       run: cd app && go build -v ./...
