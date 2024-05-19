@@ -1,3 +1,12 @@
+name: Go Releases
+'on':
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,11 +53,3 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Display download URL
       run: 'echo "Binary download link: https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/bin"'
-name: Go
-'on':
-  pull_request:
-    branches:
-    - main
-  push:
-    branches:
-    - main
