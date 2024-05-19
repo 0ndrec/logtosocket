@@ -1,0 +1,55 @@
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.21.5
+    - name: Cache Go modules
+      uses: actions/cache@v2
+      with:
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        path:
+        - ~/go/pkg/mod
+        - ~/.cache/go-build
+        restore-keys: ${{ runner.os }}-go-
+    - name: Download libs
+      run: go get -u github.com/fsnotify/fsnotify && go get -u github.com/gorilla/websocket
+    - name: Add libs
+      run: go get app/app
+    - name: Build
+      run: cd app && go build -v -o myapp
+    - name: Test
+      run: cd app && go test -v ./...
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: myapp
+        path: app/myapp
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: myapp
+        path: .
+    - name: Upload binary to GitHub Releases
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: app/myapp
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Display download URL
+      run: 'echo "Binary download link: https://github.com/${{ github.repository }}/releases/download/${{
+        github.event.release.tag_name }}/myapp"'
+name: Go
+'on':
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
