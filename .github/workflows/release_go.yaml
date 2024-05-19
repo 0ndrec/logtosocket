@@ -28,7 +28,7 @@ jobs:
     - name: Add libs
       run: go get app/app
     - name: Build
-      run: cd app && go build -v -o myapp
+      run: cd app && go build -v -o logtosocket
     - name: Test
       run: cd app && go test -v ./...
     - name: Archive production artifacts
