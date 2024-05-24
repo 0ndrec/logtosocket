@@ -49,7 +49,6 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Upgrade error: %v", err)
 		return
 	}
-	defer ws.Close()
 
 	mu.Lock()
 	clients[ws] = true
@@ -57,27 +56,29 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Client connected: %v", ws.RemoteAddr())
 
-	for {
-		if _, _, err := ws.ReadMessage(); err != nil {
+	go func() {
+		defer func() {
 			mu.Lock()
 			delete(clients, ws)
 			mu.Unlock()
 			log.Printf("Client disconnected: %v", ws.RemoteAddr())
-			break
+		}()
+		for {
+			_, _, err := ws.ReadMessage()
+			if err != nil {
+				break
+			}
 		}
-	}
+	}()
 }
 
-// MonitorLogFile watches a log file for new lines and sends them to all connected clients
 func monitorLogFile(path string) {
-	// Create a file watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
 
-	// Open the log file and move the file pointer to the end of the file
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -86,13 +87,10 @@ func monitorLogFile(path string) {
 
 	file.Seek(0, os.SEEK_END)
 
-	// Start a goroutine to watch the file for changes
 	go func() {
-		// Loop forever and watch for file changes
 		for {
 			select {
 			case event, ok := <-watcher.Events:
-				// If the event is a write, read new lines from the file
 				if !ok {
 					return
 				}
@@ -100,7 +98,6 @@ func monitorLogFile(path string) {
 					readNewLines(file)
 				}
 			case err, ok := <-watcher.Errors:
-				// If there's an error, log it and return
 				if !ok {
 					return
 				}
@@ -109,7 +106,6 @@ func monitorLogFile(path string) {
 		}
 	}()
 
-	// Add the file to the watcher
 	err = watcher.Add(path)
 	if err != nil {
 		log.Fatal(err)
@@ -122,16 +118,16 @@ func monitorLogFile(path string) {
 func readNewLines(file *os.File) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := scanner.Bytes()
 		sendToClients(line)
 	}
 }
 
-func sendToClients(message string) {
+func sendToClients(message []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 	for client := range clients {
-		err := client.WriteMessage(websocket.TextMessage, []byte(message))
+		err := client.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Printf("Write error: %v", err)
 			client.Close()
